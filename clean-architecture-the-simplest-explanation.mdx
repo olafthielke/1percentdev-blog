@@ -1,0 +1,139 @@
+---
+title: 'Clean Architecture - The Simplest Explanation'
+date: '2024-01-10'
+tags: ['clean architecture', 'simple', 'architecture']
+---
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/clean-architecture-simplest-explanation.png" alt="Clean Architecture - The Simplest Explanation" priority="true" />
+
+"No way is this architecture!"
+
+My mind was rejecting Clean Architecture even as I was learning it.
+
+It was 2010, and architecture meant cloud platforms, web servers, databases, load balancers and reverse proxies, right?
+
+I had been thinking in terms of Systems and Solution Architectures.
+
+Software Architecture had slipped under my radar.
+
+Until that fateful day, when I learned Clean Architecture (CA) from an Uncle Bob video.
+
+
+Of course, I knew programs should be well-structured for maintainability.
+
+I had yet to learn *how* differently.
+
+
+Today I will explain Clean Architecture in the simplest way.
+
+
+Let's go!
+
+
+### An Example
+Say we are writing an e-commerce web app. In particular, we're developing the payment workflow at checkout.
+
+
+After gathering the requirements, we'd be wise to start designing the checkout process before writing code.
+
+One way to kick off our design would be by starting with the database, outlining the needed tables, columns, keys and indexes.
+
+But that would be a mistake.
+
+The Clean Architecture design process differs from a database-centric approach.
+
+How?
+
+Clean Architecture asks us to identify Business Logic first.
+Why?
+
+CA recognises the priority of Business Logic.
+
+Business Logic is the most important part.
+
+
+### Business Logic
+What is Business Logic [1]?
+
+Business Logic is the program's behaviour independent of technologies, like the web and database.
+It's the purpose of the software—what it's trying to achieve.
+
+
+Within our example of paying for an order at checkout, business logic is the payment workflow—the individual steps that contribute towards a successful order payment process:
+
+1. Pay for the order
+2. Record order as paid
+3. Inform customer of successful payment
+4. Dispatch order
+
+None of these steps mentions a MongoDB database, AWS, or even a specific payment gateway, like PayPal.
+
+Business Logic is concerned with high-level business policy and processes, not technology details.
+
+
+So, we could encapsulate the high-level business logic of paying for an order in an OrderPaymentWorkflow class [2]:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-1.png" alt="OrderPaymentWorkflow class" />
+
+### Technologies & Mechanisms
+High-level business logic workflows are required, but we also need specific mechanisms to achieve the business logic objectives.
+
+In other words, we need databases, the web, cloud platforms, and other technologies to do the work.
+
+
+In our example, we must have a payment gateway, like PayPal or Stripe, for the customer to pay for their checkout order.
+
+Clean Architecture isolates technological mechanisms via the Business Logic Boundary.
+This BL Boundary consists of abstractions, like interfaces.
+Let's choose IPaymentGateway as the interface into which specific payment gateways (PayPal, Stripe, etc.) will be plugged into:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-2.png" alt="IPaymentGateway interface" />
+
+The black arrows represent a call and its return.
+
+
+Let's assume we choose PayPal and decide to use their published Software Development Kit (SDK).
+
+So far, so good.
+
+
+Yet, how does the OrderPaymentWorkflow use the PayPal SDK via the IPaymentGateway interface?
+
+Let's remember that the PayPal SDK does not know how we want to call it.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-3.png" alt="PayPal SDK" />
+
+Something's still missing.
+
+We need another component that bridges the gap, the PaypalPaymentGateway:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-4.png" alt="PaypalPaymentGateway" />
+
+The PaypalPaymentGateway has 3 responsibilities:
+
+It implements the IPaymentGateway interface, and
+internally converts the call coming from the workflow to calls into the PayPal SDK, which
+returns the responses from the SDK into responses appropriate for the workflow.
+
+The PaypalPaymentGateway provides the adapter—or plug—between the business logic and the specific technologic mechanism, the PayPal SDK.
+
+
+Why design it like this?
+
+One clear advantage: This design is pluggable. If we want to switch in Stripe, we could reference the Stripe SDK and write a StripePaymentGateway which plugs into the Business Logic via the IPaymentGateway.
+
+
+### Conclusion
+There is more detail to Clean Architecture. Yet, this to-the-point example explains the core concept of achieving business logic independent from the technology mechanisms.
+
+To recap:
+
+Clean Architecture allows us to create modular, pluggable systems, where it's easy to replace one specific implementation with another.
+And that's why Clean Architecture[3] is so useful and such a big deal.
+
+And why it's crucial to know and understand CA.
+
+##### Footnotes: 
+1. Often also called the Domain, as in Business Domain.
+2. I prefer the suffix 'UseCase' better than 'Workflow' as it more precisely expresses the business logic nature, a use case. We can have workflows other than business logic ones (e.g. data workflows).
+3. Other architectures, like Onion, Hexagonal, Ports and Adapters, at their heart, have the same idea.
