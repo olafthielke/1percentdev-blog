@@ -98,7 +98,7 @@ Validate an CustomerRegistration model:
 
 ```typescript
     // A TypeScript Clean Code Example
-    private validate ation) {
+    private validate(reg: CustomerRegistration) {
         reg.validate();
         const existingCustomer = this.customerRepo.getCustomer(reg.email);
         if (existingCustomer)
