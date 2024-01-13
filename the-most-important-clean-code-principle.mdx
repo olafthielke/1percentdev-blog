@@ -89,12 +89,23 @@ Retrieve bank account transaction data via logged-in bank client (e.g. via bank 
     }
 ```
 
-This method retrieves a logged-in bank client, and then retrieves the account transactions in the requested data range. Naturally, much detail lies hidden in lower-level functions. At this high level, those details are not relevant; for example, how we authenticate with a particular bank’s API.
+This method 
+    1. Gets a logged-in bank client, and then 
+    2. uses the client to retrieve account transactions for an account within a data range. 
 
-Pretty clean, right?
+It's clean and simple not because of what it does, but what it *hides*: 
+    - *How* we log into a particular bank's API, and
+    - *How* we read the account transactions.
+
+Those are distracting details, irrelevant at this high level of managing application's behaviour. 
+
+There will be lower-level functions that specifically manage such detailed mechanistic behaviour as logging in and reading account transactions. 
+
+Yet, at this high level, such details are not only irrelevant, but actually represent a distraction from the essential workflow we want to get done.
+
 
 ### TypeScript Example
-Validate an CustomerRegistration model:
+Validate a CustomerRegistration model:
 
 ```typescript
     // A TypeScript Clean Code Example
