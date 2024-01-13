@@ -78,7 +78,16 @@ OK, let’s check out a couple of clean code examples, one in C# and one in Type
 ### C#.NET Example
 Retrieve bank account transaction data via logged-in bank client (e.g. via bank API or website):
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/clean-code-example-csharp-getbanktransactions.jpg" alt="A Clean Code Example in C# - GetBankTransactions()." />
+```csharp
+    // A C# Clean Code Example
+    private async Task<OrderedAccountTransactions> GetBankTransactions(
+        ImportAccount account, 
+        DateRangeQuery dateRange)
+    {
+        var bankClient = await BankLogin(account.Credential);
+        return await bankClient.GetTransactions(account, dateRange);
+    }
+```
 
 This method retrieves a logged-in bank client, and then retrieves the account transactions in the requested data range. Naturally, much detail lies hidden in lower-level functions. At this high level, those details are not relevant; for example, how we authenticate with a particular bank’s API.
 
@@ -87,7 +96,15 @@ Pretty clean, right?
 ### TypeScript Example
 Validate an CustomerRegistration model:
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/clean-code-example-typescript-validate.jpg" alt="A Clean Code Example in TypeScript - validate()." />
+```typescript
+    // A TypeScript Clean Code Example
+    private validate ation) {
+        reg.validate();
+        const existingCustomer = this.customerRepo.getCustomer(reg.email);
+        if (existingCustomer)
+            throw new DuplicateCustomerEmailAddress(reg.email);
+    }
+```
 
 This method undertakes 2 validation actions: The passed-in reg instance validates itself, and we try to retrieve the customer by email address from the customerRepo and check whether it already exists.
 
