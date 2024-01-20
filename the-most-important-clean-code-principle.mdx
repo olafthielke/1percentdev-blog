@@ -15,19 +15,17 @@ Well, almost all code.
 
 I occasionally read listings written by a craftsman, but it’s a rare treat.
 
-
 The first time I encountered authentic software craftsmanship, I was transfixed.
 
 I desperately wanted to write code like that!
 
-It was a magic moment: Before my eyes was software I could understand at a glance!
-
+It was a magic moment: Before my eyes was software I could understand at a glance.
 
 At the time, my programming efforts produced convoluted results that even I had difficulty deciphering. Reading my functions felt like walking through knee-deep mud.
 
+When I read this person’s code, I knew I had crossed paths with an accomplished professional.
 
-When I read this person’s code, I knew I had crossed paths with an accomplished professional. Right then, my programming career took an unexpected turn: Writing software is more fun, easier to work with, and more productive when the code is crisp and clean.
-
+Right then, my programming career took an unexpected turn: Writing software is more fun, easier to work with, and more productive when the code is crisp and clean.
 
 Programming should be an enjoyable activity, not feel like a death march.
 
@@ -35,31 +33,28 @@ Programming should be an enjoyable activity, not feel like a death march.
 
 In the subsequent weeks, I focused on writing cleaner software.
 
-
 Improving my code quality produced positive effects: I gained a reputation as a capable and thoughtful programmer.
 
-My internal motivation skyrocketed. I was again happy to be a software developer.
-
+My internal motivation skyrocketed. I was again happy 😊 to be a software developer.
 
 How do you feel about code (your own and others)?
+- Do you feel reading and modifying most code is too hard?
+- Do you wish programming was easier?
+- Do you want to be happier as a software developer?
 
-Do you feel that reading and modifying most code is too hard?
-Do you wish programming was easier?
-Do you want to be happier as a software developer?
-If you answered Yes to all of these, then programming The Clean Code Way is for you:
-
-Your code will be easy to understand and modify,
-You’ll build a reputation as a dependable programmer,
-You’ll discover untapped enjoyment in programming.
-
+If you answered **Yes** to all of these, then programming The Clean Code Way is for you:
+- Your code will be easy to understand and modify,
+- You’ll build a reputation as a dependable programmer,
+- You’ll discover untapped enjoyment in programming.
 
 What’s not to love, right?
 
-
 Today, I want to share with you my ONE PRINCIPLE that, when consistently followed, produces shockingly beautiful code:
 
-<span className="text-4xl"> Keep It Simple.</span>
-<span className="text-2xl">Always. In Everything. As simple as possible.</span>
+>
+> ### Keep It Simple.
+> **Always. In Everything. As simple as possible.**
+>
 
 The goal is to write code so radially simple you should understand its behaviour as you read it [1].
 
@@ -91,18 +86,17 @@ Retrieve bank account transaction data via logged-in bank client (e.g. via bank 
 
 This method 
     1. Gets a logged-in bank client, and then 
-    2. uses the client to retrieve account transactions for an account within a data range. 
+    2. uses the client to retrieve account transactions for an account within a date range. 
 
 It's clean and simple not because of what it does, but what it *hides*: 
     - *How* we log into a particular bank's API, and
     - *How* we read the account transactions.
 
-Those are distracting details, irrelevant at this high level of managing application's behaviour. 
+Those are distracting details, irrelevant at this high level of managing the application's behaviour. 
 
-There will be lower-level functions that specifically manage such detailed mechanistic behaviour as logging in and reading account transactions. 
+There will be lower-level functions that specifically manage such detailed mechanistic behaviour as logging-in and reading account transactions. 
 
 Yet, at this high level, such details are not only irrelevant, but actually represent a distraction from the essential workflow we want to get done.
-
 
 ### TypeScript Example
 Validate a CustomerRegistration model:
@@ -117,11 +111,11 @@ Validate a CustomerRegistration model:
     }
 ```
 
-This method undertakes 2 validation actions: The passed-in reg instance validates itself, and we try to retrieve the customer by email address from the customerRepo and check whether it already exists.
+This method undertakes 2 validation actions: 
+1. The passed-in reg instance validates itself, and 
+2. we try to retrieve the customer by email address from the customerRepo and check whether it already exists.
 
 It’s clear what’s happening in this example too.
-
-​
 
 In both examples, the methods are appropriately named, so short and simple that their purpose is clear. Each delegates behaviour to lower-level functions.
 
