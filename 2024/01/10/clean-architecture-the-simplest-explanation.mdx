@@ -1,7 +1,7 @@
 ---
 title: 'Clean Architecture - The Simplest Explanation'
 date: '2024-01-10'
-src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/clean-architecture-simplest-explanation.png'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/10/feature-clean-architecture-the-simplest-explanation.png'
 tags: ['clean architecture', 'simple', 'architecture']
 show: true
 synopsis: '"No way this is Architecture!" My mind was rejecting the idea of Clean Architecture as I was learning it. It was 2010, and architecture meant cloud platforms, web servers, databases, load balancers an'
@@ -73,7 +73,7 @@ Business Logic is concerned with high-level business policy and processes, not t
 
 So, we could encapsulate the high-level business logic of paying for an order in an `OrderPaymentWorkflow` class [2]:
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-1.png" alt="OrderPaymentWorkflow class" />
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/10/ca-simplest-1.png" alt="OrderPaymentWorkflow class" />
 
 ### Technologies & Mechanisms
 High-level business logic workflows are required, but we also need specific mechanisms to achieve the business logic objectives.
@@ -88,7 +88,7 @@ This BL Boundary consists of abstractions, like interfaces.
 
 Let's choose `IPaymentGateway` as the interface into which specific payment gateways (PayPal, Stripe, etc.) will be plugged into:
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-2.png" alt="IPaymentGateway interface" />
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/10/ca-simplest-2.png" alt="IPaymentGateway interface" />
 
 The black arrows represent a call and its return.
 
@@ -100,13 +100,13 @@ Yet, how does `OrderPaymentWorkflow` use the PayPal SDK via the `IPaymentGateway
 
 Let's keep in mind, the PayPal SDK does **not** know how we want to call it.
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-3.png" alt="PayPal SDK" />
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/10/ca-simplest-3.png" alt="PayPal SDK" />
 
 Something's still missing.
 
 We need another component that bridges the gap, the `PaypalPaymentGateway`:
 
-<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/images/ca-simplest-4.png" alt="PaypalPaymentGateway" />
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/10/ca-simplest-4.png" alt="PaypalPaymentGateway" />
 
 The `PaypalPaymentGateway` has 3 responsibilities:
 
