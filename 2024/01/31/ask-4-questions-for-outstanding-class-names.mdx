@@ -1,0 +1,161 @@
+---
+title: 'Ask 4 Questions for Outstanding Class Names'
+date: '2024-01-31'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/01/31/feature-ask-4-questions-for-outstanding-class-names.png'
+tags: ['naming', 'classes', 'questions']
+show: true
+synopsis: 'Has code made you cry? I have cried over code. Unfortunately, not in that good way, where I might have witnessed the craftsmanship of a caring master programmer and shed a joyful tear. No, I mean in'
+---
+Has code made you cry?
+
+I have cried over code.
+
+Unfortunately, not in that good way, where I might have witnessed the craftsmanship of a caring master programmer and shed a joyful tear.
+
+No, I mean in that lonely manner where I sat sleep-deprived in front of a monitor in the early hours, despairing to fix an intermittent bug with a critical release deadline just hours away. And I couldn't understand this horrible legacy code!
+
+That's when I cried.
+
+On the upside, I had just collected another career-defining experience. 
+
+I decided never to have such a desperate programming incident again.
+
+So, what does class naming have to do with painful bug-chasing?
+
+Quite a bit, actually. 
+
+Coming up with great names is the gateway drug to clean, low-trouble software.
+
+I wish I had possessed this checklist of questions for naming classes early in my career. 
+
+## The Importance of Names
+
+Why is choosing a good name important?
+
+You can choose any name you want for your classes; e.g. if you feel like it, you could name a data access class 'BroccoliBoy'. But you're sure to cause confusion because the name is not meaningful.
+
+To maximise the maintainability of your codebases, you'll want to choose clear, meaningful class names. 
+
+But how?
+
+You start with the intended behaviour of the class.
+
+
+## Question 1:  What is it?
+This is not a silly question. What are you creating? What is this thing? What does it do? Or what's its purpose?
+
+You should be able to describe, in a single sentence, the behaviour of your new class:
+
+*"It will provide Central European local time."*
+
+*"I want a service to import bank transactions."*
+
+*"We need a component for sending emails via AWS SES."*
+
+Your one-sentence description of the class behaviour could also be lengthy: 
+
+*"I want a service that imports bank account transactions by retrieving them from a bank's API and then saving them to an SQL server database."*
+
+That is one long description! It's really multiple sentences strung together. Multiple sentences mean multiple descriptions (or responsibilities), and that we want to avoid for a class. The SOLID Principle's Single Responsibility Principle says a class should only have one responsibility.
+
+Let's split up that one sentence into its component sub-sentences and responsibilities:
+- I want a service that imports bank account transactions.
+- Retrieve account transactions from a bank's API.
+- Save bank account transactions to a SQL server database.
+
+3 separate behaviours implies 3 distinct classes—possibly more.
+
+How do you know your one-sentence description represents only one responsibility? 
+
+The next question will help:
+
+## Question 2:  Can you end the behaviour description with ", and that's all it does"?
+
+Let's try it out on the long sentence:
+
+*"I want a service that imports bank account transactions by retrieving them from a bank's API and then saving them to an SQL server database, and that's all it does."*
+
+That doesn't work, does it?!
+
+What about the component subsentences?
+- I want a service that imports bank account transactions***, and that's all it does.***
+- Retrieve account transactions from a bank's API***, and that's all it does.***
+- Save bank account transactions to a SQL server database***, and that's all it does.***
+
+Much better. 😊
+
+Our sentences describe one responsibility, and the appendage ", and that's all it does." confirms as much.
+
+On to Question 3.
+
+## Question 3:  Can you give this class a specific name?
+Now that you have a behaviour descriptor encompassing only a single responsibility, you're moving on to naming. That's the easy part!
+
+> For this step, you convert the behaviour description into a noun of something that could carry out this function:
+
+- I want a service that imports bank account transactions, and that's all it does.
+
+How about 'BankAccountTransactionImporter'? That's the natural name you might assign to an object importing bank account transactions.
+
+- Retrieve account transactions from a bank's API, and that's all it does.
+
+'BankApiTransactionReader' comes to mind. Another fitting name might be 'BankApiAccountTransactionRetriever'. And for a specific bank, say, XYZ Bank, a descriptive name could be 'XyzBankApiTransactionRetriever'.
+
+- Save bank account transactions to a SQL server database, and that's all it does.
+
+How's 'SqlServerBankAccountTransactionPersistor', or a bit shorter, you could call it 'SqlAccountTransactionSaver'. Or, if you are a fan of naming persistence classes Repository: 'SqlBankAccountTransactionRepository'.
+
+Not too shabby!
+
+**A word of caution:** You may feel tempted to use filler words like 'Manager', 'Helper' or 'Service'. That's a trap and is best avoided.
+
+Naming a class 'CustomerManager', to represent anything other than an actual customer manager HR role, will lead to trouble. Why?
+
+CustomerManager will become a magnet for any customer-related code that is difficult to name.
+
+I have witnessed 'Manager' classes grow to 10,000+ lines and 50+ public methods! That's about as far from a maintainable class as you can get.
+
+In other words, CustomerManager, is too wishy-washy a name. The behaviour is neither descriptive nor specific enough. And you can tell this because a behaviour description of "It manages customers", would not be specific enough.
+
+Onto the last question:
+
+## Question 4:  Can you shorten the name?
+Can you reduce the name without losing context and introducing confusion?
+
+For example, our earlier BankAccountTransactionImporter is on the lengthy side. How could you make it shorter?
+
+How about TransactionImporter?
+
+Of course, that will only work if the context is clear: These represent bank account transactions and not, say, database transactions.
+
+Another example: A first attempt at class behaviour like
+
+"We need a component that can send emails via AWS SES."
+
+could result in AwsSesEmailService, and this you could shorten down further to AwsEmailer.
+
+Shorter, more specific and we got rid of the 'Service' noise word too.
+
+Nice!
+
+Finally, a class to hold modified customer address data might originally be named CustomerAddressDataModificationRequest.
+
+Until you realise that Data is an empty noise word. Furthermore, Modification is more meaningful and specific than Request, so you could settle on the more concise CustomerAddressModification.
+
+
+Outstanding!
+
+
+And if you change your mind about a class name later on, you can simply change it. 
+
+
+## Conclusion
+
+Here's a quick recap on how to get to brilliant class names:
+
+1. **What is it?**  Write one sentence on what your class will do.
+2. **Can you end the behaviour description with *", and that's all it does"?***  Your class description is suitable if it still reads well after you append *", and that's all it does."*
+3. **Can you give this class a specific name?**  Turn the behaviour sentence into an object name that does this behaviour. 
+4. **Can you shorten the name?**  Compress the name without losing clarity.
+
+And that's it. You should now have an outstanding class name describing its one responsibility perfectly!
