@@ -1,0 +1,156 @@
+---
+title: 'Flexible Hardcoding and the 3 Stages of Configuration'
+date: '2024-02-07'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/feature-flexible-hardcoding-and-the-3-stages-of-configuration.png'
+tags: ['configuration', 'flexibility', 'hardcoding']
+show: true
+synopsis: 'As a kid, I got $5 in pocket money each week. For months, I received my weekly $5, but one day, my mum decided to increase the amount to $7. No complaints from me. 😊 Since my parents increased my a'
+---
+As a kid, I got $5 in pocket money each week.
+
+For months, I received my weekly $5, but one day, my mum decided to increase the amount to $7.
+
+No complaints from me. 😊
+
+Since my parents increased my allowance only every few months, we could classify it as a '*rarely changing value*'.
+
+In programming, '*rarely changing values*' are strings and quantities that remain unchanged for months or years. Since they may change occasionally, we want to make such values *configurable*.
+
+> ***Rarely changing values should go into application configuration.***
+
+Configurations also help us set different values for each deployment environment. Database connection strings will differ between development, staging and production environments.
+
+Once we have our rarely-changing, per-environment application values defined in configuration, we are free to alter the values without having to recompile and redeploy the application. However, we must retest the software since the configured values will affect the system's operation.
+
+## Stage 1 (Beginner): Hardcoding
+As a brand-new programmer, I had no appreciation for configuration. I hardcoded *everything*. I still had much to learn.
+
+At first, I didn't realise that defining sensitive configuration data in source code, such as production connection strings or admin credentials, represented the worst type of security sin: These will be available for mischief to anyone with read access to the source control repo. (In the 1990s, there was no git).
+
+## An Example
+Let's say you want to develop a polymorphic (or 'pluggable') general emailer that uses AWS Simple Email Service (SES) as the underlying technology. You've decided to use C#.NET.
+
+You have created the below `IEmailer` interface, providing pluggable emailing technology to higher-level classes.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/IEmailer.png" alt="IEmailer interface" caption="IEmailer interface" />
+
+`IEmailer` implementations could be `SmtpEmailer`, `AzureSendgridEmailer`, and, of course, `AwsEmailer`.
+
+Below, you have much of the listing for `AwsEmailer`, the general-purpose emailing class for AWS SES, including the implementation of the public `Send()` method:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/AwsEmailer-Hardcoding.png" alt="AwsEmailer with hardcoded value" caption="AwsEmailer. Can you spot the problem?" />
+
+Looks pretty clean, right?
+
+And yet, there is a *big* problem.
+
+Have you spotted it?
+
+That's right: `ClientFactory.Create()` takes in a hard-coded `RegionEndpoint`.
+
+Tough luck if we ever change our minds and want to use a different region than `APSoutheast2`!
+
+Here, we have an excellent candidate for configuration: A value varying by deployment environment and time. Today, we're using `RegionEndpoint.APSoutheast2`, and in 6 months, it might be `RegionEndpoint.USEast1`.
+
+Hardcoding the AWS Region for your `AwsEmailer` component is something no self-respecting senior developer would do.
+
+Why lock this beautifully reusable general AWS SES Emailer class into a specific AWS Region??
+
+It doesn't make sense.
+
+Alright, let's improve our `AwsEmailer` by making the AWS Region configurable.
+
+## Stage 2 (Senior Dev): Native Configuration
+
+A modern approach to configuration in .NET is using an appsettings.json config file, and read the configuration values via `IOptions`.
+
+*Note: I'm only supplying the implementation details for the sake of completeness. It's probably best to only skim the images and code for Stage 2.*
+
+Here is the updated `AwsEmailer`:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/AwsEmailer-IOptions.png" alt="AwsEmailer using IOptions for config" caption="AwsEmailer. Properly configured using `IOptions<T>`. Bit taxing to read and understand." />
+
+We're now using the generic `IOptions<T>` pattern and `appsettings.json` data file as the new way to configure .NET apps.
+
+I don't want to get too deep into how to use `IOptions<T>`. I will say that we require an appsettings.json configuration file containing the JSON data of custom configuration values. Below, we have defined the AWS-specific config values in the AwsConfig node:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/appsettings-json.png" alt="appsettings.json" caption="appsettings.json. We're only interested in the AwsConfig section." />
+
+We must also have a companion `AwsConfig` class, record or struct:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/AwsConfig.png" alt="AwsConfig" caption="AwsConfig record. Matches what's in the AwsConfig section in config file." />
+
+Lastly, we need to configure our Inversion of Control (IoC) container to map the '*AwsConfig*' configuration section to the `AwsConfig` record in the ASP.NET Web API project's `Startup.cs` file.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/Startup-IOptions.png" alt="Startup with IOptions config" caption="Startup.cs for ASP.NET Web API configured for `IOptions<AwsConfig>`." />
+
+`IOptions<T>` is one way of configuring a .NET application. There are others. We could configure our system from CSV or XML files, a database or even a remote service.
+
+I acknowledge `IOptions<T>` as an effective and easy-to-implement configuration method. I would choose it to configure my .NET apps.
+
+In that case, why do I not consider `IOptions<T>` as the pinnacle of configuration?
+
+I have several reasons:
+
+- **Open-Closed Principle (OCP) Violation**. The OCP encourages us to prefer code open to extension rather than code needing to be modified. In our example, if we ever wanted to change to a different way of configuring `AwsEmailer`, a database or a custom XML config file, `AwsEmailer` would need to be modified. The out-of-the-box implementation of `IOptions<T>` configuration works by reading config values from an `appsettings.json` file. A change in configuration mechanism would mean we'd need to write a custom implementation of `IOptions<T>` for reading from database or XML file (too complicated), or we can abstract away the configuration mechanism. More on this shortly.
+- **Distracting Complexity**. Here, I'm making a subtle but crucial point. The mechanistic complication of `IOptions<T>`, disproportionally impinges on the readability of `AwsEmailer`, especially given that configuration is not a central concern for this class. `AwsEmailer` sends emails using AWS SES. The fact that we are retrieving a required value (AWS Region) should not take centre stage. I have reduced the overbearing complexity by extracting the logic to configure the AWS Region into a separate helper method. Still, I think the `IOptions<AwsConfig>` primary constructor parameter draws my eye every time I read the code. I can see how a junior developer might get confused about the low importance of `IOptions<AwsConfig>` in `AwsEmailer`.
+
+## Stage 3 (Master): Abstracting away Configuration Mechanics
+
+Why should the configuration mechanics be part of a class only interested in consuming a config value?
+
+The answer: "*It shouldn't.*"
+
+Let's create an abstraction for the AWS Configuration data, IAmazonConfiguration:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/IAmazonConfiguration.png" alt="IAmazonConfiguration" caption="IAmazonConfiguration" />
+
+Consequently, `AwsEmailer` simplifies to
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/AwsEmailer-IAmazonConfiguration.png" alt="AwsEmailer using AmazonConfiguration" caption="AwsEmailer. Without the configuration mechanics." />
+
+The AWS Region value comes from implementers of `IAmazonConfiguration`, for example, an `AppSettingsAmazonConfiguration`, which retrieves the desired AWS Region from the `appsettings.json` file, as before:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/AppSettingsAmazonConfiguration.png" alt="AwsEmailer using AmazonConfiguration" caption="AppSettingsAmazonConfiguration contains config mechanics." />
+
+We have the same configuration process as before, but we have simplified `AwsEmailer` by separating the configuration retrieval into a new class!
+
+Here are a few advantages in favour of this approach:
+- **OCP Compliance**. Switching over to obtaining configuration values from a SQL Server database, we only need to write a `SqlServerAmazonConfiguration` class implementing `IAmazonConfiguration`. `AwsEmailer` does not need to change at all!
+- **Sheer Simplicity**. `AwsEmailer` is no longer overwhelmed by configuration concerns. All we have is a simple reference to `IAmazonConfiguration` and a call to the `Config.Region` property, and that's it.
+- **Easier Mocking**. I bet mocking `IAmazonConfiguration` in unit tests is a little more straightforward than a generic interface like `IOptions<T>`.
+
+Some people will instinctively lob a grenade and scream "*Overengineering*". Only a few years ago, I would have joined that chorus.
+
+Through hard-won experience on many projects, I have learned that favouring a complexity-minimising approach will pay dividends in the form of highly understandable and flexible systems.
+
+## My Secret: Flexible Hardcoding
+
+Sometimes, when I develop core functionality, like `AwsEmailer`, I want to carry on with core work and not get distracted by writing boilerplate configuration code.
+
+When I feel like that, I may write a configuration class with hard-coded values.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/configuration-implementations.png" alt="IAmazonConfiguration implementers" caption="Possible implementers of `IAmazonConfiguration`." />
+
+In the case of `AwsEmailer`, I may create a `HardcodedAmazonConfiguration` class. Yes, I genuinely name it that!
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/07/HardcodedAmazonConfiguration.png" alt="HardcodedAmazonConfiguration" caption="HardcodedAmazonConfiguration. An example of Flexible Hardcoding!" />
+
+`HardcodedAmazonConfiguration` sets the AWS Region to my preferred development region, `APSoutheast2`.
+
+Once I've configured my IoC to use `HardcodedAmazonConfiguration` in development, I can run my local development environment, and `AwsEmailer` will use `APSoutheast2`!
+
+I call it '**Flexible Hardcoding**'. I'm using a fixed configuration value, but the configuration mechanism is pluggable (via `IAmazonConfiguration`), and one way to use it is to plug in a provider of hard-coded, fixed values! No changes need to be made to `AwsEmailer` to do so.
+
+> ***Direct hardcoding poses the most problems when we need to change existing code.***
+
+When I feel like working on something less taxing, I will write the dynamic `appsettings.json` configuration.
+
+### Caution
+- I am careful to indicate the fixed nature of hardcoded configuration classes.
+- I replace hardcoded configurations before a production deployment. Hardcoded configurations are only valuable for development.
+
+## Conclusion
+When we face different strings or quantities in production and development, or those values change from time to time, we should set up those values to be configurable.
+
+Novice programmers tend to overdo hard-coding, and seniors know how to implement a useful configuration structure. However, master software engineers know how to inject further flexibility into a program by abstracting the configuration mechanics from the place using those configuration values!
