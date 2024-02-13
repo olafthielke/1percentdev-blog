@@ -1,0 +1,142 @@
+---
+title: 'Fun Coffee Mug Refactoring'
+date: '2024-02-14'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/feature-fun-coffee-mug-refactoring.png'
+tags: ['refactoring', 'coffee mug', 'fun']
+show: true
+synopsis: 'I got this coffee mug from Santa 🎅 It's pretty funny. I chuckle every time I use it when programming. While the code reads like English, we could improve it. Give It a Go! Try refactoring the cod'
+---
+I got this coffee mug from Santa 🎅
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/coffee-mug.png" alt="Coffee mug" caption="Coffee mug programming humour." />
+
+It's pretty funny.
+
+I chuckle every time I use it when programming.
+
+The hilarious coffee mug code:
+
+```csharp
+    while (working)
+    {
+        coffee.drink();
+        work.execute();
+        if (coffee == "empty")
+        {
+            if (coffeepot == "empty")
+                coffeepot.brew();
+            coffee.refill();
+        }
+    }
+```
+
+While the code reads like English, we could improve it.
+
+## Give It a Go!
+
+Try refactoring the code before reading my solution.
+
+Why?
+
+It has to do with how our brains work:
+> ***Attempting to answer a question before we know how to, helps us remember the answer better, even if our attempt was unsuccessful!***
+
+It is a crucial principle for rapid learning and improved knowledge retention.
+
+## Let's Refactor!
+
+To make the example work in C#, I've had to modify the code:
+- I've put the code snippet into a `CoffeeDrinker` class's `Drink()` method, and 
+- I've introduced a string `State` property on `Coffee` and `Coffeepot` to compare to the `"empty"` state in the conditional checks.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/original-code-coffeedrinker.png" alt="CoffeeDrinker class" caption="The original coffee mug snippet hosted in class CoffeeDrinker." />
+
+I wanted to refactor this code *safely*. 
+
+To that effect, <a href="https://www.patreon.com/olafcodecoach/posts" target="_blank">I've created unit tests and implemented a small working system modelling `Coffee`, `Coffeepot`, and `Work` objects.</a>
+
+Let's refactor the coffee mug code!
+
+## First Improvement
+Both `if` conditional expressions check for coffee 'emptiness' via direct string comparison. 
+
+We will make the code more robust by hiding this implementation detail. 
+
+I've replaced those checks with Boolean properties on the `Coffee` and `Coffeepot` objects:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/first-pass-drink.png" alt="First improvement" caption="Replacing raw string comparisons with meaningful, encapsulated boolean properties." />
+
+It's already much nicer.
+
+This improved code is no longer concerned with how we check for emptiness.
+
+That's an important point since we can change the underlying emptiness check, and the code inside the `if` conditional won't be affected. 
+
+Here's the appropriate clean code guideline: 
+
+> Separate ***what*** the code does from ***how*** it does it.
+
+Understanding the distinction (*what* vs *how*) is a master software engineering competency. 
+
+## Second Improvement
+Next, the `Working` variable in the `while` loop seems out of place. Having a 'working' indicator on the `Work` object would feel more natural. 
+
+Consequently, I've moved the logic of `Working` into an `IsInProgress` property on the `Work` class. I felt `if (Work.IsInProgress)` read like natural language while `if (Work.Working)` was understandable, but it didn't sound right.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/second-pass-drink.png" alt="Second improvement" caption="Replacing the while loop expression." />
+
+## Third Improvement
+The code has a logic problem.
+
+The calls to `Coffee.Drink()` and `Work.Execute()` would be more effective at the *end* of the loop. 
+
+*Why?*
+
+Two reasons:
+1. Refilling the coffee mug after drinking from it will waste coffee when we exit the loop after refilling! Refilling before drinking would fix the problem.
+2. Drinking coffee before checking whether we have coffee (or not) could mean trying to drink from an empty mug! Definitely less than ideal for a coffee-powered programmer! The solution is the same as in the previous point: We should check whether coffee is available before drinking. And if not, refill from the coffee pot.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/third-pass-drink.png" alt="Third improvement" caption="The coffee drinking should be done with a full mug!" />
+
+That's solid code. 
+
+We could leave it like this.
+
+However, for additional simplicity, I prefer to go one further.
+
+## Fourth Improvement
+When I reflected on the latest version of the coffee mug code, I suddenly realised that several lines of coffee preparation are required before we get to the essential: *Drinking coffee and executing work.*
+
+Therefore, I suggest we extract the less important coffee preparation detail into a helper method, `PrepareCoffee()`.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/fourth-pass-preparecoffee.png" alt="Fourth improvement - PrepareCoffee()" caption="PrepareCoffee() helper method." />
+
+To reduce nesting, I've also inverted the first if conditional into a guard clause: *If we have coffee, return early and continue drinking and working.*
+
+And so the final version of `CoffeeDrinker.Drink()` becomes:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/14/fourth-pass-drink.png" alt="Fourth improvement - Drink()" caption="Super-simple refactored coffee mug code!" />
+
+It's a short and straightforward method without complexity: *While there is work, prepare coffee, drink it and do the work.* 
+
+So easy to understand.
+
+One doesn't need to think to comprehend what's going on.
+
+Here's another helpful rule:
+
+> ***Aim to write code so simple your readers won't have to think to understand it.***
+
+While this code is clearer than the original, we did sacrifice the joke.
+
+## Conclusion
+
+The core lessons from this post are:
+- **Learning Retention Principle**: *Attempting to answer a question before we know how to, helps us remember the answer better.* So, always attempt a problem first. Look up the answer later. This simple change in strategy will enormously impact your understanding and retention of material.
+
+- **Abstraction & Encapsulation**: *Consider separating what the code does from how it does it.* Don't worry if you still need to learn what this means. As you program, reflect on this point frequently, and you'll soon see. 
+
+- **Excessive Simplicity**: *Aim to write code so simple your readers won't need to think to understand it.* Encapsulate complexity and hide it away.
+
+
+Note: I performed the coffee mug code refactoring with a unit test safety net. <a href="https://www.patreon.com/olafcodecoach/posts" target="_blank">Check out my Patreon for access to the complete source code.</a>
