@@ -1,0 +1,62 @@
+---
+title: 'How to Keep Your Users Happy When Working with Legacy Code'
+date: '2024-02-28'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/28/feature-how-to-keep-your-users-happy-when-working-with-legacy-code.png'
+tags: ['legacy code', 'happy users', 'unit tests']
+show: true
+synopsis: 'I didn''t expect that. He slammed his face into open palm hands and groaned: ''Oh God, what is it NOW?!?'' I was about to ask this dev lead for help with some tricky code for the second time that m'
+---
+I have a confession to make:
+
+I *love* clean code.
+
+Almost unreasonably so.
+
+This passion used to get me into trouble when I cleaned up messy code.
+
+Extensive manual testing confirmed that my refactored software was ready for production.
+
+Yet, after deployment, hundreds of users discovered the system would no longer work as expected! Understandably, many were unhappy.
+
+The legacy code I was working with was of the worst kind: So coupled, a code change in one area could produce a bug in an unrelated area. It was like turning on the kitchen lights would set one's bed on fire!
+
+I had broken the application a few times. I was starting to get a reputation as a Bug Farmer. My career was moving in the wrong direction!
+
+Nobody cares about the clean code when the price is production bugs.
+
+Fair enough.
+
+It was time for a change. 
+
+## Working Effectively with Legacy Code
+I had recently read "Working Effectively with Legacy Code" by Michael Feathers. This insightful book is packed with techniques for working safely with messy code.
+
+#### My Old Process for changing code (bug fix / refactoring / feature):
+1. Carefully identify where to change the code,
+2. Make the change
+3. Manually test the change (myself & tester),
+4. If all is good, deploy to production,
+5. Fix new bugs found by unhappy users!
+
+Feathers' book helped me improve my development process.
+
+##### My New Process:
+1. Carefully identify where to change the code,
+2. Identify where to put unit tests covering the intended changes.
+3. If necessary, break dependencies to make code unit-testable.
+4. Write the tests,
+5. Make the changes while keeping the tests green (i.e. passing)
+6. Deploy to production.
+7. Done. Happy users!
+
+Changing my process for modifying code made a world of difference to the users' happiness. Defects still happened but less frequently. 
+
+My state of mind recovered from an constant anxiety of breaking production to near-relaxation, knowing that the unit tests had my back.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/02/28/code-problems-over-time.png" alt="Code Problems over Time" caption="Complexity builds on existing complexity in legacy code. Without a reliable way of identifying broken behaviour caused by code changes, the fallback mechanism of 'being careful' is not actionable and does not suffice to fulfill the promise of low-defect software. Unit tests are such a mechanism and software delivery practices who consistently use unit tests will find themselves on the enviable green trajectory." />
+
+Since then, I have advocated for securing legacy code with unit tests before making changes. I'm proud to say that teams I have worked with who have adopted this innovative, unit tests-first approach have seen fewer defects, less downtime, less time fixing bugs, happier customers, and fewer customer complaints after only a few months of consistently putting tests first!
+
+## Conclusion
+If you're suffering from the adverse effects of buggy legacy code, I recommend securing the codebase with unit tests before making changes. You'll learn how in future newsletter editions. Or you could read Michael Feathers' book.
+Good luck! 🍀
