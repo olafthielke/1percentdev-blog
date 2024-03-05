@@ -1,0 +1,155 @@
+---
+title: 'Use 1 Rule to Decide between Class and Method State'
+date: '2024-03-06'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/feature-use-1-rule-to-decide-between-class-and-method-state.png'
+tags: ['rule', 'state', 'class', 'method', 'field', 'parameter']
+show: true
+synopsis: 'In Object-Oriented programming, some things appear simple, but they are not. I should know; it took me a while to fully understand the critical concept we''ll be covering today. Nobody explained it to '
+---
+In Object-Oriented programming, some things appear simple, but they are not.
+
+
+I should know; it took me a while to fully understand the critical concept we'll be covering today. 
+
+
+Nobody explained it to me—I only took a single introductory computer science class at university. I learned today's insight through trial and error and reading other people's code.
+
+
+If you're a senior dev, it might be worth a refresher. I have seen seniors lack clarity on this concept; not just juniors!
+
+
+Let's get into it!
+
+
+## Example: PersonNameFormatter
+Say we want to create a class and method to format a first name and last name into a full name:
+
+"Fred" and "Flintstone" become "Fred Flintstone", and
+"Barney" and "Rubble" produce "Barney Rubble".
+
+You get the idea.
+
+
+In C#, we could achieve this behaviour in a PersonNameFormatter class with a FormatName() method in one of two ways[1]:
+
+
+**Option 1 - Class Fields**: Store the first name and last name in the class' instance state, i.e. fields or properties:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Fields.png" alt="PersonNameFormatter.FormatName() using fields" />
+
+called like this
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Fields-Call.png" alt="PersonNameFormatter.FormatName() using fields call" />
+
+
+**Option 2 - Method Parameters**: First name and last name get consumed as incoming parameter values on FormatName():
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Parameters.png" alt="PersonNameFormatter.FormatName() using paramters" />
+
+and invoked like this
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Parameters-Call.png" alt="PersonNameFormatter.FormatName() using paramters call" />
+
+
+Not much of a difference, right?!
+
+
+But in reality, it's like day and night. 
+
+
+To illustrate further, let's call FormatName() multiple times when we store the data at the class level:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Fields-Multiple-Calls.png" alt="PersonNameFormatter.FormatName() using fields multiple calls" />
+
+Output:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Fields-Multiple-Calls-Output.png" alt="PersonNameFormatter.FormatName() using fields multiple calls output" />
+
+
+Interesting. FormatName() produces the same output every time.
+
+
+What about when calling the parameterised FormatName()?
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Parameters-Multiple-Calls.png" alt="PersonNameFormatter.FormatName() using paramters multiple calls" />
+
+Output:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/PersonNameFormatter-Parameters-Multiple-Calls-Output.png" alt="PersonNameFormatter.FormatName() using paramters multiple calls output" />
+
+When calling FormatName() with parameters, we can vary the arguments we use for the parameters, producing varying outputs for the same PersonNameFormatter object.
+_______________________
+
+
+#### Aside: Parameters and Arguments - What's the difference?
+
+Parameters are the incoming variables of a function or method. 
+In our second example, the parameters of FormatName() are (string firstName, string lastname).
+
+
+Arguments are the values used for the parameters when calling a function. 
+In our second example, FormatName() is called with different arguments, firstly ("Fred", "Flintstone"), then ("Barney", "Rubble") and finally ("Wilma", "Flintstone").
+
+
+Using the correct terminology with other engineers helps. 
+_______________________
+
+
+When we use parameters for passing data to a method, we have more flexibility than when setting class state on instantiation, and then using that state in a parameterless method.
+
+
+> Here's the defining rule for when to use parameters versus class state (i.e. fields):
+> We should use Fields when the data must be available and accessible everywhere within the class (methods, properties, other fields), i.e. it is shared data. At all other times, we want to use Parameters. 
+
+
+Parameters are relevant for varying the behaviour of methods. 
+
+
+Let's ask ourselves a question to determine which structure—Fields, or Parameters—works better for the PersonNameFormatter example:
+
+
+*Q: Are we likely to want to use "Fred" and "Flintstone" as the only values for the PersonNameFormatter? Yes, or No?*
+
+
+*A: **No**. It would be helpful to be able to use other names for the same PersonNameFormatter instance. Therefore, **parameters** offer more versatility.*
+
+
+## Example: ShoppingCart
+Here is a TypeScript listing for a simple ShoppingCart. We can add items to the cart, remove items, and clear out all items. 
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/ShoppingCart.png" alt="ShoppingCart" />
+
+Each ShoppingCart object needs an internal representation of what is currently in the cart; the items collection does that. items represents the internal state of the class, which all methods have access to.
+
+
+The add() method acts on the items state, by adding to the cart contents already held at the class level. Method add() has two parameters, product and quantity representing the incoming quantity of product be added to the cart. 
+
+
+## Example: RegisterCustomerUseCase 
+Not all class state represents data. High-level service classes can delegate work to lower-level services. Ideally, those lower-level services should be available to all methods on the high-level service. Keeping a class field reference to a lower-level service instance enables universal accessibility within the class. 
+
+
+RegisterCustomerUseCase outlines the workflow for registering a customer on a system. It's an excellent example of a class delegating data persistence to ICustomerRepository, and notifications to ICustomerNotifier. Both services are available throughout this C# class:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/06/RegisterCustomerUseCase.png" alt="RegisterCustomerUseCase" />
+
+
+## Conclusion
+Whether state should be stored at the class level, or passed into a method, seems simple enough - It's foundational OOP knowledge. 
+Nonetheless, the applicability can confuse even fairly experienced developers. 
+
+
+To recap, the question to ask is:
+> ***Do I need to have this data (or external behaviour) accessible everywhere within the class, i.e. all methods, properties and fields?***
+
+
+If the answer is 
+- **Yes**, it's probably best modelled as ***class state*** (i.e. field or property), 
+- No, you should probably pass it as a ***parameter***.
+
+
+Note: Referenced external behaviour is almost always needed at the class level! 
+
+
+##### Footnotes: 
+[1] Using a *static* FormatName() method would also work in this trivial example, but we'll conveniently ignore that for now.
