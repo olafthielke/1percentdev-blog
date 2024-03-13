@@ -18,7 +18,7 @@ This skill is as rare as hen's teeth.
 
 Gaining this one skill will make your systems elegant and beautiful. It's a developer *superpower*.
 
-And today, I'll show you how to do it!
+And today, I'll show you how to do it.
 
 
 ## Example: CustomerEmailer
@@ -51,13 +51,13 @@ Let me show you how to do this:
 
 ## Look up an Email Template
 
-One of the things that irks me most is the hard-coded email body. As you can imagine, email text changes at the drop hat. 
+One of the things that irks me most is the hard-coded email body. As you can imagine, email text changes at the drop of a hat. 
 
 We want to move the email template body and subject text to another place, be it a database, a JSON file, a remote service or something else entirely. It must be an email template, as hard-coding customer names and other dynamic properties won't work.
 
 Furthermore, we need access to a place holding email templates we can look up by name, such as "Customer Welcome," for a customer welcome email.
 
-Let abstract away this repository of email templates as IEmailTemplateRepository, including a method to look up templates by name:
+Let's abstract away this repository of email templates as IEmailTemplateRepository, including a method to look up templates by name:
 
 <CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/IEmailTemplateRepository.png" alt="IEmailTemplateRepository" />
 
