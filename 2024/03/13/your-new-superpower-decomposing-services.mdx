@@ -1,0 +1,138 @@
+---
+title: 'Your New Superpower - Decomposing Services'
+date: '2024-03-13'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/feature-your-new-superpower-decomposing-services.png'
+tags: ['services', 'decomposition', 'superpower']
+show: true
+synopsis: 'I''m confused. I don''t recall one instance of ''getting it''. I am trying to remember when I learned how to intelligently break up complicated services into smaller, simpler ones. Also, those smaller, de'
+---
+I'm confused.
+
+I don't recall one instance of '*getting it*'.
+
+I am trying to remember when I learned how to intelligently break up complicated services into smaller, simpler ones. 
+
+Also, those smaller, decomposed services should fit and work well together, like a glove fits a hand. 
+
+This skill is as rare as hen's teeth.
+
+Gaining this one skill will make your systems elegant and beautiful. It's a developer *superpower*.
+
+And today, I'll show you how to do it!
+
+
+## Example: CustomerEmailer
+Below is a C# listing for sending new customers a Welcome email. Its structure is typical for programmers with less experience. As a junior developer, I wrote code just like it. 
+
+It works well enough but has some issues:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/CustomerEmailer-Before-Decomposing.png" alt="CustomerEmailer before decomposition" />
+
+What are the problems with this method?
+
+To maximise your learning experience, stop reading, grab pen and paper and take 5 minutes to identify the code issues before reading on.
+
+Alright, here are my main concerns:
+1. **The email subject and body are hard-coded**. Every time the email text changes, the code must be recompiled and redeployed.
+2. **The sending email address is hard-coded**. Whenever this address changes, the code must again be rebuilt and redeployed.
+3. **The AWS region is hard-coded**. The method instantiates a AmazonSimpleEmailServiceClient for a fixed AWS region, RegionEndpoint.APSoutheast2. If we ever need to change this region, CustomerEmailer must be recompiled and redeployed.
+4. **The use of AWS SES for sending emails**. What about sending these emails via another technology, like SMTP or Azure Communication Services? Such a change would require invasive modifications. And (yet again!) the code would need to be recompiled and redeployed. 
+
+SendWelcomeMessage() will likely need modifications and redeployment in the future.
+
+Can we restructure CustomerEmailer, so that none of the outlined and expected behaviour changes require code modifications in this class? 
+
+Yes, it's possible to pull this off!
+
+We must make CustomerEmailer pluggable and delegate much of its current work to other services, i.e. service decomposition!
+
+Let me show you how to do this:
+
+
+## Look up an Email Template
+
+One of the things that irks me most is the hard-coded email body. As you can imagine, email text changes at the drop hat. 
+
+We want to move the email template body and subject text to another place, be it a database, a JSON file, a remote service or something else entirely. It must be an email template, as hard-coding customer names and other dynamic properties won't work.
+
+Furthermore, we need access to a place holding email templates we can look up by name, such as "Customer Welcome," for a customer welcome email.
+
+Let abstract away this repository of email templates as IEmailTemplateRepository, including a method to look up templates by name:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/IEmailTemplateRepository.png" alt="IEmailTemplateRepository" />
+
+
+## Look up Email Sender
+
+The email sender may change from time to time. It would be downright dorky to alter and redeploy the code when that happens. 
+
+No, rarely changing values, like sending email address, belong in system configuration. 
+
+Since the configuration technology can also vary (e.g. config file, database, service) let's abstract it away with an IEmailConfiguration interface:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/IEmailConfiguration.png" alt="IEmailConfiguration" />
+
+Getter property FromAddress retrieves the sending email address.
+
+Nice!
+
+What's next?
+
+
+## Replacing Placeholders
+
+Now that we can retrieve an email template by name (e.g. "Customer Welcome"), we will want to turn the template into a concrete email for a given recipient customer. 
+
+
+We must replace all placeholders in the email with the correct customer specifics:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/Customer-Fred-Flintstone.png" alt="Customer" />
+
+If the customer is "Fred Flintstone" and a templated email subject of "Welcome to XYZ, [[FirstName]]!" should replace [[FirstName]] with the customer object's FirstName property: "Welcome to XYZ, Fred!".
+
+Accordingly, we have a requirement for a PlaceholderReplacer to replace placeholders embedded within the email template subject and body with customer information.
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/IPlaceholderReplacer.png" alt="IPlaceholderReplacer" />
+
+
+## Sending the Email
+
+While the current CustomerEmailer implementation sends the formatted customer Welcome email with AWS Simple Email Service (SES), that may change. 
+
+It's in our system's (and our company's) interest to retain a high degree of independence from specific technologies. 
+
+Consider how much effort would be required to modify the code to send emails through a different cloud service platform. Currently: A bit. Ideally: Zero, or at most a config change.
+
+How do we decompose the generic emailing behaviour?
+
+How about via an IEmailer interface:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/IEmailer.png" alt="IEmailer" />
+
+That's it.
+
+Now we can plug an AwsEmailer, an AzureEmailer, or an SmtpEmailer into this interface with IoC configuration!
+
+
+## Putting it Together
+
+Here is the new, improved CustomerEmailer:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/CustomerEmailer-ERD.png" alt="CustomerEmailer ERD" />
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/13/CustomerEmailer-After-Decomposing.png" alt="CustomerEmailer after decomposition" />
+
+To summarise:
+1. Email template store. Emails are templated, keyed by name, stored in a repo and retrievable from the repo. The repo can be anything that implements IEmailTemplateRepository, like a Postgres database or a JSON file.
+2. Infrequently changing values, like sending email address, are now stored in configuration. Once again, implementations can vary.
+3. A service for replacing placeholders, which is also abstracted. However, a concrete and reusable PlaceholderReplacer, is available with the code accompanying this example.
+4. Last, the generic emailing technology has been extracted and put behind an IEmailer interface. The code provides a separate AwsEmailer implementation, for which the AWS region is separately configurable!
+
+
+## Conclusion
+
+So, what cognitive work must happen before we can decompose services?
+1. We need to recognise if an aspect of our code is ***overly specific*** and that this specific-ness will hurt us later when we need to implement different specific behaviour that the existing code cannot fulfil. Think of the hard-coded email text, which is likely to change in the future.
+2. Next, we might consider solutions that relax the specific-ness of our current situation, to the point where we have solved the problem ***in general***. E.g. Email templates with placeholders that are replaced with customer information.
+3. Decompose the component services along those lines. Interfaces should have abstract general names, like IEmailer, while implementers have specific ones, like AwsEmailer.
+4. Revel in the ***Lego-like reusability*** of your code. Consider the value of a general PlaceholderReplacer and specific and pluggable emailers, like an AwsEmailer! This component could be useful whenever requirements call for an emailing solution.
