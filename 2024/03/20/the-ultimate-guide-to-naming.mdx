@@ -1,0 +1,222 @@
+---
+title: 'The Ultimate Guide to Naming'
+date: '2024-03-20'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/feature-the-ultimate-guide-to-naming.png'
+tags: ['naming', 'guide']
+show: true
+synopsis: 'There''s an old programming joke: Computer science has two hard things: cache invalidation, naming, and off-by-one errors. 😀 There is truth in this. Naming—or, more precisely, choosing great names'
+---
+There's an old programming joke:
+
+> *Computer science has two hard things: cache invalidation, naming, and off-by-one errors.* 😀
+
+There is truth in this. Naming—or, more precisely, choosing great names for variables, functions and modules—is one of the more challenging aspects of programming.
+
+Choosing names that don't fit well with the code is oh-so easy. Such misnamings will prove problematic, making future development efforts harder. 
+
+And bad naming is rife in many codebases.
+
+Still, naming things is not as tricky as the joke has us believe. 
+
+Today, I'll show you how easy naming can be.
+
+Let's get into it.
+
+**Note**: This guide focuses on the language-independent aspects of naming things. 
+
+## General Guidelines
+### Take Your Time
+Rome wasn't built in a day. Coming up with great names takes time. 
+I recommend taking a minute to formulate a name. By all means, take 5-10 minutes, or take a break. 
+It's better to spend a bit longer on crafting a great name than choosing a misleading or ill-fitting one that will confuse developers for years. 
+
+### Be Prepared to Change It
+If you think of a better name, change it. Renaming is easy to do with refactoring tools such as Resharper.
+
+**Two caveats:**
+Be careful with dynamically typed languages like JavaScript. Introduced bugs will manifest at runtime unless you have comprehensive unit tests.Where the rename risks breaking clients, you'll want to avoid it. E.g. API responses. 
+
+### Choose Meaningful Names
+This makes sense, right? We name things for what they represent in the program. 
+The more exacting and precise the name, the more likely readers will understand our code. 
+If there is one overarching, crucial rule to naming, this is it. 
+
+### Avoid Hungarian Notation
+Hungarian notation refers to prefixing type information into variable names. 
+`intCustomerNumber` might be fine while you're modelling the customer number as an integer type. 
+However, changing it to string type causes the variable prefix to become misinformation. Avoid. 
+
+**Note**: Sometimes, convention requires Hungarian notation. C# interfaces are defined with a prefixed I, as in `IOrdersRepository`.
+
+Let's start with the most straightforward programming constructs—constants.
+
+## Constants
+Opinions vary widely on the formatting of constants, from all uppercase 
+    `const int SECONDS = 60;`
+to prefixed k 
+    `const int kSeconds = 60;`
+which has a maths origin (from the German 'Konstant'), 
+to no special notation 
+    `const int Seconds = 60;`
+
+I don't have strong guidance for you on this matter.
+
+The important part is to make the constant meaningful and unambiguous. In that way 
+    `const int NumberOfSecondsInMinute = 60;`
+explains its purpose better than any of the previous options. 
+
+## Variables
+This section refers to 
+- parameters, 
+- local variables, 
+- class members or fields
+
+### Booleans
+Which is a clearer name for a boolean: `active` or `isActive`?
+
+Correct! The latter `isActive` expresses the true/false nature much clearer than merely `active`.
+
+Other great names for booleans are:
+- `HasOutstandingOrders`
+- `doesRequireCleaning` or `requiresCleaning`
+
+My guiding rule is to try the boolean variable name (or expression) out in an `if` statement and read it out loud:
+
+`if (student.exams)` is OK as its meaning can be inferred, 
+but `if (student.hasExams)` is crystal clear. 
+
+Prefer clarity.
+
+### Variable Name Length
+Short variable names are acceptable for short and simple functions.
+
+Check out this example:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/Short-Function.png" alt="Short function" />
+
+The local variable `tz` clearly refers to the timezone. The method is called `ToTimezone()`—what else would `tz` stand for? 
+
+So, for tiny functions, variable names can be terse, possibly even a single character, as long as the meaning is clear. 
+
+However, when functions are longer, we also need longer variable names.
+
+Why? In a long function, the number of moving parts can only be discerned with meaningful, context-rich names. 
+Here's an example:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/Long-Function.png" alt="Long function" />
+
+Luckily, the function has long, explanatory variable names, or keeping track of variables and behaviour would be even more challenging. 
+
+## Functions & Methods
+Functions are expressions of behaviour—they do something. 
+
+What a function does should be clearly expressed by its name. 
+
+What does that mean?
+
+What about a function called `BankAccount`?
+
+Does a name like that make sense?
+
+No, it does not. That name fails to clearly define the purpose of this function. What does it do with the bank account? 
+
+Therefore, 
+> Functions should start with a ***verb***. 
+
+Examples:
+- `Sum()`
+- `Open()`
+- `AddClassTopic()`
+- `ConvertToCustomer()`
+- `TryImportTransactions()`
+
+The second to last example could even be reduced to `ToCustomer()` without loss of understanding. 
+
+### Public Methods
+
+Public methods should have short names. Readers browsing through a listing of public methods ought to be able to pinpoint the sought-after behaviour from a concise method name. 
+
+Furthermore, for public methods, the best practice is to prefer overloads rather than different method names for various combinations of parameters.
+
+For example, the .NET `System.IO.File` has these 3 overloads of `Open()`:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/File-Open.png" alt="File.Open" />
+
+The alternative might have been to specify three distinct method names, each outlining how to open a file:
+- `OpenWithMode()`
+- `OpenWithModeAndAccess()`
+- `OpenWithModeAndAccessAndShare()`
+
+Yeah, it's pretty nasty. That's why we use overloads instead. 
+
+Pick the method and then the overload that suits you.
+
+## Private Methods
+On the other hand, private methods can, and often should, have longer names. 
+
+Encapsulating code that carries out a given behaviour in a descriptively named private helper function is more maintainable than having comments. 
+Comments rot and decay. They often get out of sync with the code they describe, and so become disinformation. 
+
+Here is an example of a commented behaviour which we can extract into a meaningfully named helper:
+
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/CalcNewCompletedTransactions-Comments.png" alt="CalcNewCompletedTransactions with comments" />
+
+After extraction:
+<CustomImage src="https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/20/CalcNewCompletedTransactions-Method.png" alt="CalcNewCompletedTransactions with helper method" />
+
+Isn't that much nicer?
+
+This example also illustrates that we can frequently shorten words in the names of variables, functions and classes without loss of context. `Calculate` can be reduced to `Calc`, and the reader will still understand the meaning.
+
+### Properties > Methods
+Consider whether a public field or property would be more concise when you have a public method that requires no parameters.
+
+For example, on an `Invoice` class, we could have a method to calculate the total amount as 
+- `CalcTotalAmount()`
+invoked as
+   `var total = cart.CalcTotalAmount();`
+
+Alternatively, we could have a read-only property/field called 
+- `TotalAmount`, or even just
+- `Total`
+called as
+   `var total = cart.Total;`
+
+Beautiful, right?
+
+Whether the total amount is calculated or retrieved is an internal matter that clients of the `Invoice` class should be ignorant of.
+
+
+Classes & Modules
+For arriving at outstanding class (and module) names, please see my recent article:
+
+
+<a href="https://www.1percent.dev/posts/2024/01/31/ask-4-questions-for-outstanding-class-names" target="_blank">
+<CustomImage src="https://www.1percent.dev/posts/2024/01/31/feature-ask-4-questions-for-outstanding-class-names.png" alt="Ask 4 Questions for Outstanding Class Names" />
+</a>
+
+## Other Thoughts
+### Be Consistent
+One way to make our systems easy to maintain is by always using the correct terms. 
+If the business has customers, the code should refer to 'customers' and not 'clients' or 'purchasers' unless those terms have a separate and different meaning.
+
+Another way I like to provide consistency is by supplying my classes with a consistent interface. 
+
+Are these methods on a customer repository consistent?
+- `GetCustomer(emailAddress);`
+- `RetrieveAllCustomers();`
+- `ReadCustomerBy(customerNumber);`
+
+No, they are a hodge podge of names. 
+
+Let's do a rename refactoring: 
+- `GetCustomer(emailAddress);`
+- `GetCustomer(customerNumber);`
+- `GetAllCustomers();`
+ 
+So much more consistent and predictable!
+
+## Conclusion
+- **Take your time** - Good names take time. Coming up with a great name after a few minutes is better than instantly deciding on a confusing or dubious one.
+- **Change it** - If you've thought of a better name, change it yet proceed with caution and a unit testing safety net.
+- **Meaningful Names** - Names mean something. A name should closely match the thing or action it is modelling.
