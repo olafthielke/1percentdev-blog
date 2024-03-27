@@ -1,0 +1,122 @@
+---
+title: 'The STRIDE Threat Model'
+date: '2024-03-27'
+src: 'https://raw.githubusercontent.com/olafthielke/1percentdev-blog/main/2024/03/27/feature-the-stride-threat-model.png'
+tags: ['STRIDE', 'threat', 'model', 'security']
+show: true
+synopsis: 'The lead developer had pulled me aside. "Why are you exposing the user''s password via the API?" "Is that a problem?" "It certain is. Here is why..." That same afternoon, a long time ago, my junior de'
+---
+The lead developer had pulled me aside.
+
+"*Why are you exposing the user's password via the API?*"
+
+"Is that a problem?"
+
+"*It certain is. Here is why...*"
+
+That same afternoon, a long time ago, my junior developer self got a much-needed lecture on securing applications that I still remember. 
+
+I felt a bit embarrassed not knowing application security fundamentals, but at least I was starting my systems security journey.
+
+I will consider this write-up a success if I can help even one developer avoid similar embarrassment.
+
+## Secure Apps
+In a world of malicious attackers, securing our systems is critical.
+
+We must know about security problems and how to repair them.
+
+So, where might an attacker look for vulnerabilities?
+
+## STRIDE
+That's where the STRIDE Threat Model comes in.
+
+STRIDE gives us the tools to identify security threats.
+
+STRIDE is an acronym. Each letter stands for a specific threat:
+- **S**poofing
+- **T**ampering
+- **R**epudiation
+- **I**nformation Disclosure
+- **D**enial of Service
+- **E**levation of Privilege
+
+Let's examine each of these in detail:
+
+**Spoofing** - Means pretending to be another person, identity or account. 
+
+For example, gaining access to someone's credentials, like username and password.
+
+**Tampering** - Is the malicious modification of data. 
+
+Truncating the 'Customer' database table or the unauthorised lowering of product prices are examples of destructive tampering.
+
+**Repudiation** - Means an attacker can successfully deny their action. When a user acts maliciously, we want a record identifying them as the offender of the attack: 
+- Who did it?
+- What did they do?
+- When did they do it?
+
+For example, an attacker might be able to remain anonymous and so claim innocencenot good. Alternatively, an authenticated (i.e. logged-in) system user attacks the system, but their actions are not logged against their identity, thus offering easy deniability.
+
+**Information Disclosure** - This one is self-explanatory. Information is revealed to individuals who are not meant to have it. 
+
+Getting access to a file that contains sensitive company financials, or deceiving someone into relinquishing their banking credentials in a phishing attack, are both serious Information Disclosure events.
+
+**Denial of Service (DOS)** - Denial of service attacks are attempts by malicious users to overwhelm a system's capacity and deny legitimate users access. 
+
+Examples: A successful DOS attack on a banking web app will stress the bank's system until it becomes overwhelmed and responds with '503 - Service Unavailable'.
+
+**Elevation of Privilege** - An attacker gains unauthorised privileged access to a system. 
+
+A compelling real-world example was the Stuxnet worm targeted to setback Iran's nuclear enrichment program. Stuxnet exploited several vulnerabilities in Windows to spread and escalate its privileged access within infected networks. 
+
+OK, I have a hands-on learning exercise for you.
+
+## Lab: Insurance Company Web Portal
+An insurance company has built a web portal for independent insurance brokers. Advisers are required to log in with their username and strong password. 
+
+Once authenticated, brokers can request new policies and do all the other things advisers can do for their clients. 
+
+The system logs all incoming requests for auditing purposes. 
+
+The web portal allows reporting on individual customers via this URL:
+https://reporting.supacheaplifeinsure.com?customerno=1234&reporttype=policyaggregate
+
+The `customerno` can be an integer number up to 999999, and the `reporttype` is the requested report.
+
+A few enterprising insurance advisers have discovered that by altering the customerno in the browser's address bar, they can view confidential policy information for customers belonging to other brokers.
+
+Your task is to analyse which aspects of the STRIDE threat model come into play.
+
+I suggest you take 5 minutes to work through this problem before checking out my answer below.
+
+## My STRIDE Analysis
+As pointed out in the description, the integer nature of the customerno, represents a blatant opportunity of attack already exploited by some brokers. 
+
+Switched-on (and unscrupulous) advisers have discovered that they can acquire detailed financial information on their competitors' customers.
+
+Here's my STRIDE analysis:
+
+**Spoofing? No**. The advisers are not assuming the identity of another adviser. They are still logged in as themselves. 
+
+**Tampering? No**. The problematic URL refers to reporting only, and thus won't involve tampering of data.
+
+**Repudiation? No**. The system logs all requests, and the degree of offending by broker advisers should be recorded and be undeniable. 
+
+**Information Disclosure? Yes**. Offending insurance advisers accessed financially sensitive policy information on their competitors' clients. 
+
+**Denial Of Service? No**. This vulnerability is not particularly exploitable by DOS attacks.
+
+**Elevation of Privilege? No**. No elevation of privilege was required to exploit this security hole.
+
+Opportunistic insurance advisers used only one exploit: **Information Disclosure**. 
+
+Nonetheless, much financial damage might have occurred to some advisers until the security hole was identified and fixed.
+
+## The Fix?
+
+Repairing this authorisation security hole would be relatively easy: Ensure that  the specified customer number belongs to the currently logged-in adviser account. If it's not their customer, display an appropriate error message.
+
+## Conclusion
+The STRIDE Threat Model allows for the evaluation of security threats to a system. 
+
+Next time you want to pick holes in a system's security, I recommend using it.
